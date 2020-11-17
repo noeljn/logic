@@ -83,7 +83,7 @@ findTerm(LineNum, [[Line|Ts]|T], Term) :- findTerm(LineNum, Ts, Term).
 findTerm(LineNum, [Line|T], Term) :- findTerm(LineNum, T, Term).
 
 lineVerifyPrint(LineNum) :- write("Line "),write(LineNum),write(" fullfilled"),write("\n").
-%testPrint(LineNum) :- write("Box number "),write(LineNum),write("\n").
+testPrint(LineNum) :- write("Test "),write(LineNum),write("\n").
 
 
 %Finds the level of a line
@@ -112,7 +112,7 @@ isList([_|_]).
 isList([]).
 
 %Makes sure that all Func point to the same box or one of the two values points to something outside any box.
-compareBoxNumber(LineNum, Proof, Func) :- arg(1, Func, Value), not(arg(2, Func, _)), detBox(Value, Proof, ResValue), detBox(LineNum, Proof, ResLineNum), ResValue = 0.
+compareBoxNumber(LineNum, Proof, Func) :- arg(1, Func, Value), not(arg(2, Func, _)), detBox(Value, Proof, ResValue), detBox(LineNum, Proof, ResLineNum), !, ResValue = 0.
 compareBoxNumber(LineNum, Proof, Func) :- arg(1, Func, Value), not(arg(2, Func, _)), detBox(Value, Proof, ResValue), detBox(LineNum, Proof, ResLineNum), !, ResLineNum = ResValue.
 compareBoxNumber(LineNum, Proof, Func) :- arg(1, Func, Value), arg(2, Func, SecValue), detBox(Value, Proof, ResValue), detBox(SecValue, Proof, ResSecValue), !, boxNumberHelper(ResValue, ResSecValue).
 compareBoxNumber(LineNum, Proof, Func) :- arg(1, Func, Value), arg(2, Func, Value2), arg(3, Func, Value3), arg(4, Func, Value4), arg(5, Func, Value5), 
