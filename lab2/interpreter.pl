@@ -1,41 +1,54 @@
+%
+% Natural deduction Interpreter
+%
+% Author: Noel Karlsson Johansson
+% Author: Richard Palm
+%
+% 2020-11-19
+% 
+
+
+%Reads information from the input file and seperates the Prems, Goal and Proof.
 verify(InputFileName) :- see(InputFileName),
     read(Prems), read(Goal), read(Proof),
     seen,
     valid_proof(Prems, Goal, Proof).
 
 
+%Calls for the last line and the entire proof the be verified. Then writes "Proof Passed" if the proof passed
 valid_proof(Prems, Goal, Proof) :- verifyLastLine(Goal, Proof), verifyProof(Proof, Prems, Proof), proofVerifyPrint().
 
-%Veriyies the last line is the same as the Goal.
+%Verifies the last line is the same as the Goal.
 verifyLastLine(Goal, Proof) :- last(Proof,LastLine), checkLastLine(LastLine, Goal).
 
 %Checks if the term of the last line is equal to the Goal
 checkLastLine([_, Term, _], Goal) :- Term == Goal.
 
+%Calls verifyLine for every line in the proof
 verifyProof([], _, _).
 verifyProof([H|T], Prems, Proof) :- verifyLine(H, Prems, Proof), verifyProof(T, Prems, Proof). 
 
-%premise
+%Verifies a line if the functions is a premise
 verifyLine([LineNum, Term, premise], Prems, _) :- member(Term, Prems), lineVerifyPrint(LineNum).
 
-%assumption
+%Verifies a line if the functions is a assumption
 verifyLine([[LineNum, Term, assumption]|T], Prems, Proof) :- verifyProof(T, Prems, Proof), lineVerifyPrint(LineNum).
 
-%copy
+%Verifies a line if the functions is a copy
 verifyLine([LineNum, Term, copy(X)], _, Proof) :- X < LineNum, findTerm(X, Proof, Term), compareLevel(LineNum, Proof, copy(X)), compareBoxNumber(LineNum, Proof, copy(X)), ! , lineVerifyPrint(LineNum).
 
-%andint
+%Verifies a line if the functions is a andint
 verifyLine([LineNum, Term, andint(X,Y)], _, Proof) :- X < LineNum, Y < LineNum, findTerm(X, Proof, TermX), findTerm(Y, Proof, TermY), Term == and(TermX, TermY), compareBoxNumber(LineNum, Proof, andint(X,Y)), lineVerifyPrint(LineNum).
 
-%andel
+%Verifies a line if the functions is a andel
 verifyLine([LineNum, Term, andel1(X)], _, Proof) :- X < LineNum, findTerm(X, Proof, and(Term,_)), compareLevel(LineNum, Proof, andel1(X)), compareBoxNumber(LineNum, Proof, andel1(X)), lineVerifyPrint(LineNum).
 verifyLine([LineNum, Term, andel2(X)], _, Proof) :- X < LineNum, findTerm(X, Proof, and(_,Term)), compareLevel(LineNum, Proof, andel2(X)), compareBoxNumber(LineNum, Proof, andel2(X)), lineVerifyPrint(LineNum).
 
-%orint
+%Verifies a line if the functions is a orint
 verifyLine([LineNum, Term, orint1(X)], _, Proof) :- X < LineNum, findTerm(X, Proof, or(Term,_)), compareLevel(LineNum, Proof, orint1(X)), compareBoxNumber(LineNum, Proof, orint1(X)), lineVerifyPrint(LineNum).
 verifyLine([LineNum, Term, orint2(X)], _, Proof) :- X < LineNum, findTerm(X, Proof, or(_,Term)), compareLevel(LineNum, Proof, orint2(X)), compareBoxNumber(LineNum, Proof, orint2(X)), lineVerifyPrint(LineNum).
 
-%orel
+%Verifies a line if the functions is a orel
 verifyLine([LineNum, Term, orel(X,Y,U,V,W)], _, Proof) :- X < LineNum, 
 findTerm(X, Proof, or(TermX, TermY)), 
 findTerm(Y, Proof, TermX),
@@ -45,32 +58,43 @@ findTerm(W, Proof, Term),
 compareLevel(LineNum, Proof, orel(X,Y,U,V,W)), compareBoxNumber(LineNum, Proof, orel(X,Y,U,V,W)),
 !,lineVerifyPrint(LineNum).  
 
+%Verifies a line if the functions is a impint
 verifyLine([LineNum, imp(TermX,TermY), impint(X,Y)], _, Proof) :- X < LineNum, Y < LineNum, findTerm(X, Proof, TermX), findTerm(Y, Proof, TermY), compareLevel(LineNum, Proof, impint(X,Y)), compareBoxNumber(LineNum, Proof, impint(X,Y)), ! , lineVerifyPrint(LineNum).
 
+%Verifies a line if the functions is a impel
 verifyLine([LineNum, Term, impel(X,Y)], _, Proof) :- X < LineNum, Y < LineNum, findTerm(Y, Proof, imp(TermX, Term)), findTerm(X, Proof, TermX), compareLevel(LineNum, Proof, impel(X,Y)), compareBoxNumber(LineNum, Proof, impel(X,Y)), lineVerifyPrint(LineNum).
 
+%Verifies a line if the functions is a negint
 verifyLine([LineNum, Term, negint(X,Y)], _, Proof) :- X < LineNum, Y < LineNum, findTerm(X, Proof, TermX), findTerm(Y, Proof, cont), neg(TermX) == Term, compareLevel(LineNum, Proof, negint(X,Y)), lineVerifyPrint(LineNum).
+
+%Verifies a line if the functions is a negel
 verifyLine([LineNum, Term, negel(X,Y)], _, Proof) :- X < LineNum, Y < LineNum, findTerm(X, Proof, TermX), findTerm(Y, Proof, TermY), neg(TermX) == TermY, compareLevel(LineNum, Proof, negel(X,Y)), Term == cont, ! , lineVerifyPrint(LineNum) .
 
-%contel
+
+%Verifies a line if the functions is a contel
 verifyLine([LineNum, _, contel(X)], _, Proof) :- X < LineNum, findTerm(X, Proof, cont), compareLevel(LineNum, Proof, contel(X)), compareBoxNumber(LineNum, Proof, contel(X)), lineVerifyPrint(LineNum).
 
-%negnegint
-%negnegel
+
+%Verifies a line if the functions is a negnegint
 verifyLine([LineNum, Term, negnegint(X)], _, Proof) :- X < LineNum, findTerm(X, Proof, TermX), arg(1, Term, InTerm), arg(1, InTerm, TermX), compareLevel(LineNum, Proof, negnegint(X,Y)), compareBoxNumber(LineNum, Proof, negnegint(X)), lineVerifyPrint(LineNum). 
+
+%Verifies a line if the functions is a negnegel
 verifyLine([LineNum, Term, negnegel(X)], _, Proof) :- X < LineNum, findTerm(X, Proof, neg(neg(Term))), compareLevel(LineNum, Proof, negnegel(X,Y)), compareBoxNumber(LineNum, Proof, negnegel(X)), lineVerifyPrint(LineNum).
 
-%mt(X,Y)
+%Verifies a line if the functions is a mt
 verifyLine([LineNum, Term, mt(X,Y)], _, Proof) :- X < LineNum , Y < LineNum, arg(1, Term, InTerm), findTerm(X, Proof, TermX), arg(1, TermX, InTerm), arg(2, TermX, InTermX ), findTerm(Y, Proof, neg(InTermX)), compareLevel(LineNum, Proof, mt(X,Y)), compareBoxNumber(LineNum, Proof, impel(X,Y)), lineVerifyPrint(LineNum).
 
-%pbc(X,Y)
+%Verifies a line if the functions is a pbc
 verifyLine([LineNum, Term, pbc(X,Y)], _, Proof) :- X < LineNum, Y < LineNum, findTerm(X, Proof, neg(Term)), findTerm(Y, Proof, cont), compareLevel(LineNum, Proof, pbc(X,Y)), lineVerifyPrint(LineNum).
 
-%lem
+%Verifies a line if the functions is a lem
 verifyLine([LineNum, or(neg(P), P), lem], _, Proof) :- lineVerifyPrint(LineNum).
 verifyLine([LineNum, or(P, neg(P)), lem], _, Proof) :- lineVerifyPrint(LineNum).
 
+%Gets the first element of a list
 getFirstOfList([H|T], H).
+
+%Gets the seconds element of a list
 getSecondOfList([_,B|T], B).
 
 %Tries to find the term in the proof at a line
@@ -120,6 +144,7 @@ compareBoxNumber(LineNum, Proof, Func) :- arg(1, Func, Value), arg(2, Func, Valu
 detBox(Value, Proof, ResValue), detBox(Value2, Proof, ResValue2), detBox(Value3, Proof, ResValue3), detBox(Value4, Proof, ResValue4), detBox(Value5, Proof, ResValue5), detBox(LineNum, Proof, ResLineNum),
 boxNumberHelper(ResValue, ResValue2, ResValue3, ResValue4, ResValue5, ResLineNum).
 
+%Helper predicate to compareBoxNumber
 boxNumberHelper(ResValue, ResValue2, ResValue3, ResValue4, ResValue5, ResLineNum) :- ResValue2 = ResValue3, ResValue4 = ResValue5, ResLineNum = ResValue.
 boxNumberHelper(0, ResValue2, ResValue3, ResValue4, ResValue5, ResLineNum) :- ResValue2 = ResValue3, ResValue4 = ResValue5.
 boxNumberHelper(ResValue, 0) :- true.
