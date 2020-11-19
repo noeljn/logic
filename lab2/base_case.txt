@@ -11,7 +11,7 @@ and(imp(p,q), imp(c,q)).
   [4, imp(p,q), impint(2,3)],
   [
     [5, c, assumption],
-    [6, q, copy(3)]
+    [6, q, copy(1)]
   ],
   [7, imp(c,q), impint(5,6)],
   [8, and(imp(p,q), imp(c,q)), andint(4,7)]

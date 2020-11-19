@@ -4,15 +4,14 @@ verify(InputFileName) :- see(InputFileName),
     valid_proof(Prems, Goal, Proof).
 
 
-valid_proof(Prems, Goal, Proof) :- verifyLastLine(Goal, Proof), verifyProof(Proof, Prems, Proof).
+valid_proof(Prems, Goal, Proof) :- verifyLastLine(Goal, Proof), verifyProof(Proof, Prems, Proof), proofVerifyPrint().
 
-%
+%Veriyies the last line is the same as the Goal.
 verifyLastLine(Goal, Proof) :- last(Proof,LastLine), checkLastLine(LastLine, Goal).
 
 %Checks if the term of the last line is equal to the Goal
 checkLastLine([_, Term, _], Goal) :- Term == Goal.
 
-%
 verifyProof([], _, _).
 verifyProof([H|T], Prems, Proof) :- verifyLine(H, Prems, Proof), verifyProof(T, Prems, Proof). 
 
@@ -73,7 +72,6 @@ verifyLine([LineNum, or(P, neg(P)), lem], _, Proof) :- lineVerifyPrint(LineNum).
 
 getFirstOfList([H|T], H).
 getSecondOfList([_,B|T], B).
-%getThirdOfList([_,_,C|T], C).
 
 %Tries to find the term in the proof at a line
 findTerm(LineNum,[], Term) :- false.
@@ -82,9 +80,11 @@ findTerm(LineNum, [[Line|Ts]|T], Term) :- getFirstOfList(Line, LineNum), getSeco
 findTerm(LineNum, [[Line|Ts]|T], Term) :- findTerm(LineNum, Ts, Term).
 findTerm(LineNum, [Line|T], Term) :- findTerm(LineNum, T, Term).
 
+%Prints 'Line number fullfilled'
 lineVerifyPrint(LineNum) :- write("Line "),write(LineNum),write(" fullfilled"),write("\n").
-testPrint(LineNum) :- write("Test "),write(LineNum),write("\n").
 
+%Prints 'Proof Passed'
+proofVerifyPrint :- write("Proof Passed"),write("\n").
 
 %Finds the level of a line
 boxLevel(LineNum,[], BoxLevel, ResBoxLevel) :- false.
@@ -102,6 +102,7 @@ countBoxes([Line|T], Count, ResCount, StartNum, ResStartNum) :- countBoxes(T, Co
 detBox(LineNum, Proof, ResBoxNum) :- boxLevel(LineNum, Proof, 0, Level), Level = 0, ResBoxNum = 0.
 detBox(LineNum, Proof, ResBoxNum) :- countBoxes(Proof, 0, Boxes, [] , StartNum),elementComp(StartNum, LineNum, 0, ResPos), ResBoxNum = ResPos, boxLevel(LineNum, Proof, 0, Level), Level > 0.
 
+%Determise in which position a number should be, if it where to be put into a list with numbers, ordered form smallest to bigest.
 elementComp([], Element, Pos, ResPos) :- ResPos is 0.
 elementComp([H|[]], Element, Pos, ResPos) :- ResPos is Pos + 1.
 elementComp([H|T], Element, Pos, ResPos) :- Element >= H, getFirstOfList(T, Ht), Element < Ht, ResPos is Pos + 1.
@@ -125,7 +126,7 @@ boxNumberHelper(ResValue, 0) :- true.
 boxNumberHelper(ResValue, ResSecValue) :- ResValue = ResSecValue.
 boxNumberHelper(0, ResSecValue) :- true.
 
-%Comapres the level of different lines. This makes sure that the targets of the Func are at most within 1 level of eachother. And for those that should be on the same level, it checks for that too.
+%Comapres the level of different lines. This makes sure that the targets of the Func are on the correct levels.
 compareLevel(LineNum, Proof, Func) :- arg(1, Func, Value), boxLevel(LineNum, Proof, 0, Level), boxLevel(Value, Proof, 0, ValueLevel), Level >= ValueLevel.
 compareLevel(LineNum, Proof, Func) :- arg(1, Func, Value), arg(2, Func, SecValue), 
 boxLevel(LineNum, Proof, 0, Level), boxLevel(Value, Proof, 0, ValueLevel), boxLevel(SecValue, Proof, 0, SecValueLevel), Diff is ValueLevel-Level, Diff2 is SecValueLevel-Level,
