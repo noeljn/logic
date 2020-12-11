@@ -1,0 +1,19 @@
+[[in, [b1, b2, ir, nm, ex]],
+ [b2, [do]],
+ [b1, [do]],
+ [do, [in]],
+ [ir, [in]],
+ [nm, [in]],
+ [ex, [in]]].
+
+[[in, [rk, nk, ok]],
+ [b2, [rk]],
+ [b1, [nk]],
+ [do, [rk, nk]],
+ [ir, [ok]],
+ [nm, [ok]],
+ [ex, [ok]]].
+
+in.
+
+ax(ag(or(ok, or(nk,rk)))).
